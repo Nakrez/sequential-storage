@@ -141,14 +141,16 @@ impl ItemHeader {
 
                 let mut retry = false;
                 loop {
-                    flash
-                        .read(data_address, &mut data_buffer[..read_len])
-                        .await
-                        .map_err(|e| Error::Storage {
-                            value: e,
-                            #[cfg(feature = "_test")]
-                            backtrace: std::backtrace::Backtrace::capture(),
-                        })?;
+                    if read_len != 0 {
+                        flash
+                            .read(data_address, &mut data_buffer[..read_len])
+                            .await
+                            .map_err(|e| Error::Storage {
+                                value: e,
+                                #[cfg(feature = "_test")]
+                                backtrace: std::backtrace::Backtrace::capture(),
+                            })?;
+                    }
 
                     let data = &data_buffer[..self.length as usize];
                     let data_crc = adapted_crc32(data);
