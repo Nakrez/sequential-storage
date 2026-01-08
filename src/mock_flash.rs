@@ -86,7 +86,7 @@ impl<const PAGES: usize, const BYTES_PER_WORD: usize, const PAGE_WORDS: usize>
 
     fn validate_operation(offset: u32, length: usize) -> Result<Range<usize>, MockFlashError> {
         let offset = offset as usize;
-        if (offset % Self::READ_SIZE) != 0 {
+        if (offset % Self::READ_SIZE) != 0 || length == 0 || length % BYTES_PER_WORD != 0 {
             Err(MockFlashError::NotAligned)
         } else if offset > Self::CAPACITY_BYTES || offset + length > Self::CAPACITY_BYTES {
             Err(MockFlashError::OutOfBounds)
