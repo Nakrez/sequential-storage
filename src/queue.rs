@@ -971,6 +971,43 @@ mod tests {
     }
 
     #[test]
+    async fn iter_pop_out_of_order() {
+        let mut storage = QueueStorage::new(
+            MockFlashBig::new(WriteCountCheck::Twice, None, true),
+            const { QueueConfig::new(0x000..0x1000) },
+            NoCache::new(),
+        );
+
+        let mut data_buffer = AlignedBuf([0; 1024]);
+
+        let gen_data = |i: usize| vec![i as u8; i % 512 + 1];
+        const COUNT: usize = 20;
+
+        for i in 0..COUNT {
+            storage.push(&gen_data(i), false).await.unwrap();
+        }
+
+        let mut iterator = storage.iter().await.unwrap();
+        let mut i = 0;
+        while let Some(entry) = iterator.next(&mut data_buffer).await.unwrap() {
+            if i % 2 == 1 {
+                assert_eq!(entry.pop().await.unwrap(), gen_data(i));
+            }
+
+            i += 1;
+        }
+        assert_eq!(i, COUNT);
+
+        let mut iterator = storage.iter().await.unwrap();
+        let mut i = 0;
+        while let Some(entry) = iterator.next(&mut data_buffer).await.unwrap() {
+            assert_eq!(entry.into_buf(), gen_data(i));
+            i += 2;
+        }
+        assert_eq!(i, COUNT);
+    }
+
+    #[test]
     async fn push_pop_tiny() {
         let mut storage = QueueStorage::new(
             MockFlashTiny::new(WriteCountCheck::Twice, None, true),
