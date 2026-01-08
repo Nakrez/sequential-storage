@@ -290,14 +290,16 @@ impl<'d> Item<'d> {
         };
 
         let data_address = ItemHeader::data_address::<S>(address);
-        flash
-            .write(data_address, data_block)
-            .await
-            .map_err(|e| Error::Storage {
-                value: e,
-                #[cfg(feature = "_test")]
-                backtrace: std::backtrace::Backtrace::capture(),
-            })?;
+        if !data_block.is_empty() {
+            flash
+                .write(data_address, data_block)
+                .await
+                .map_err(|e| Error::Storage {
+                    value: e,
+                    #[cfg(feature = "_test")]
+                    backtrace: std::backtrace::Backtrace::capture(),
+                })?;
+        }
 
         if !data_left.is_empty() {
             let mut buffer = AlignedBuf([0; MAX_WORD_SIZE]);
