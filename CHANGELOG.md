@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## 7.0.1 - 09-01-26
+
 - Added checks to avoid trying to write or read zero bytes of data to/from the flash
 
 ## 7.0.0 - 16-12-25
