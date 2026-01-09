@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Added checks to avoid trying to write or read zero bytes of data to/from the flash
+
 ## 7.0.0 - 16-12-25
 
 - *Breaking:* Changed the API to revolve around new `xxStorage` structs. Instead of having to call a bunch of free-standing
@@ -26,7 +28,6 @@
 - Optimized cache a little bit which saves ~200 bytes binary size in example
 - Add heap-backed cache types when the `alloc` feature is active.
   This gets rid of some (const) generics and allows you to create a cache with dynamic length.
-- Added checks to avoid trying to write or read zero bytes of data to/from the flash
 
 This release is 'disk'-compatible with 6.0
 
