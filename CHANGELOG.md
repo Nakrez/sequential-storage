@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## 7.1.0 - 19-01-26
+
+- Added `postcard` feature, disabled by default. This enables the `PostcardValue` trait.
+  Implement it on your type, and it will automatically implement the `map::Value` trait by using postcard to serialize and deserialize.
+
 ## 7.0.1 - 09-01-26
 
 - Added checks to avoid trying to write or read zero bytes of data to/from the flash
