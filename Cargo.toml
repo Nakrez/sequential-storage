@@ -1,6 +1,6 @@
 [package]
 name = "sequential-storage"
-version = "7.0.1"
+version = "7.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "A crate for storing data in flash with minimal erase cycles."
@@ -29,18 +29,26 @@ futures = { version = "0.3.30", features = ["executor"] }
 futures-test = "0.3.30"
 
 [features]
+# Get defmt format implementations on some types like errors
 defmt = ["dep:defmt"]
+# Enable some std-only features like debug printing the items in a storage
 std = ["alloc"]
-# Enable the implementation of the map Key trait for ArrayVec and ArrayString
+# Enable convenience implementations for arrayvec
 arrayvec = ["dep:arrayvec"]
+# Enable convenience implementations for alloc
 alloc = ["defmt?/alloc"]
+# Enable convenience implementations for heapless 0.8
 heapless = ["dep:heapless"]
+# Enable convenience implementations for heapless 0.9
 heapless-09 = ["dep:heapless-09"]
+# Enable convenience implementations for postcard
 postcard = ["dep:postcard", "dep:serde"]
+
+# Internal feature. Do not use. Anything here is semver exempt.
 _test = ["dep:futures", "dep:approx", "std", "arrayvec", "alloc", "heapless"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(fuzzing_repro)'] }
 
 [package.metadata.docs.rs]
-features = ["arrayvec", "alloc", "heapless", "heapless-09", "postcard"]
+features = ["arrayvec", "std", "heapless", "heapless-09", "postcard"]
