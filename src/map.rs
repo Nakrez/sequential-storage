@@ -3,6 +3,9 @@
 use core::{marker::PhantomData, mem::size_of};
 use embedded_storage_async::nor_flash::MultiwriteNorFlash;
 
+#[cfg(feature = "postcard")]
+use serde::{Deserialize, Serialize};
+
 use crate::item::{Item, ItemHeader, ItemIter};
 
 use self::{
@@ -1223,6 +1226,53 @@ impl<'a> Value<'a> for &'a [u8] {
     }
 }
 
+#[cfg(feature = "postcard")]
+/// Marker trait for types that will be serialized using [postcard].
+///
+/// Implement this trait on a type to enable automatically using postcard to serialize and
+/// deserialize it.
+///
+/// [postcard]: https://crates.io/crates/postcard
+pub trait PostcardValue<'a>: Serialize + Deserialize<'a> {}
+
+#[cfg(feature = "postcard")]
+impl<'a, T> Value<'a> for T
+where
+    T: PostcardValue<'a>,
+{
+    fn serialize_into(&self, buffer: &mut [u8]) -> Result<usize, SerializationError> {
+        Ok(postcard::to_slice(self, buffer).map(|s| s.len())?)
+    }
+
+    fn deserialize_from(buffer: &'a [u8]) -> Result<(Self, usize), SerializationError>
+    where
+        Self: Sized,
+    {
+        Ok((postcard::from_bytes(buffer)?, buffer.len()))
+    }
+}
+
+#[cfg(feature = "postcard")]
+impl From<postcard::Error> for SerializationError {
+    fn from(error: postcard::Error) -> SerializationError {
+        use postcard::Error::*;
+        match error {
+            SerializeBufferFull => SerializationError::BufferTooSmall,
+            SerializeSeqLengthUnknown => SerializationError::InvalidData,
+            DeserializeUnexpectedEnd
+            | DeserializeBadVarint
+            | DeserializeBadBool
+            | DeserializeBadChar
+            | DeserializeBadUtf8
+            | DeserializeBadOption
+            | DeserializeBadEnum
+            | DeserializeBadEncoding
+            | DeserializeBadCrc => SerializationError::InvalidFormat,
+            _ => SerializationError::Custom(error as i32),
+        }
+    }
+}
+
 macro_rules! impl_map_item_num {
     ($num:ty) => {
         impl<'a> Value<'a> for $num {
@@ -1821,6 +1871,20 @@ mod tests {
         assert_eq!(
             <[u16; 2]>::deserialize_from(&buffer),
             Ok(([0x1234, 0x5678], 4))
+        );
+    }
+
+    #[cfg(feature = "postcard")]
+    #[test]
+    async fn postcard_value() {
+        #[derive(PartialEq, Debug, serde::Serialize, serde::Deserialize)]
+        struct Foo(u32);
+        impl crate::map::PostcardValue<'_> for Foo {}
+        let mut buffer = [0; 8];
+        assert_eq!(Value::serialize_into(&Foo(123), &mut buffer), Ok(1));
+        assert_eq!(
+            <Foo as Value>::deserialize_from(&buffer[..1]),
+            Ok((Foo(123), 1))
         );
     }
 }
