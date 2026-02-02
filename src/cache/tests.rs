@@ -14,44 +14,47 @@ mod queue_tests {
 
     #[test]
     async fn no_cache() {
-        assert_eq!(
-            run_test(NoCache::new()).await,
-            FlashStatsResult {
-                erases: 149,
-                reads: 165009,
-                writes: 6299,
-                bytes_read: 651212,
-                bytes_written: 53299
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 149,
+            reads: 165009,
+            writes: 6299,
+            bytes_read: 651212,
+            bytes_written: 53299,
+        };
+        let cache = NoCache::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = NoCache::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn page_state_cache() {
-        assert_eq!(
-            run_test(PageStateCache::<NUM_PAGES>::new()).await,
-            FlashStatsResult {
-                erases: 149,
-                reads: 68037,
-                writes: 6299,
-                bytes_read: 554240,
-                bytes_written: 53299
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 149,
+            reads: 68037,
+            writes: 6299,
+            bytes_read: 554240,
+            bytes_written: 53299,
+        };
+        let cache = PageStateCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = PageStateCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn page_pointer_cache() {
-        assert_eq!(
-            run_test(PagePointerCache::<NUM_PAGES>::new()).await,
-            FlashStatsResult {
-                erases: 149,
-                reads: 9959,
-                writes: 6299,
-                bytes_read: 89616,
-                bytes_written: 53299
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 149,
+            reads: 9959,
+            writes: 6299,
+            bytes_read: 89616,
+            bytes_written: 53299,
+        };
+        let cache = PagePointerCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = PagePointerCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     async fn run_test(cache: impl CacheImpl) -> FlashStatsResult {
@@ -109,72 +112,77 @@ mod map_tests {
 
     #[test]
     async fn no_cache() {
-        assert_eq!(
-            run_test(NoCache::new()).await,
-            FlashStatsResult {
-                erases: 198,
-                reads: 233786,
-                writes: 5201,
-                bytes_read: 1837101,
-                bytes_written: 50401
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 198,
+            reads: 233786,
+            writes: 5201,
+            bytes_read: 1837101,
+            bytes_written: 50401,
+        };
+        let cache = NoCache::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = NoCache::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn page_state_cache() {
-        assert_eq!(
-            run_test(PageStateCache::<NUM_PAGES>::new()).await,
-            FlashStatsResult {
-                erases: 198,
-                reads: 181162,
-                writes: 5201,
-                bytes_read: 1784477,
-                bytes_written: 50401
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 198,
+            reads: 181162,
+            writes: 5201,
+            bytes_read: 1784477,
+            bytes_written: 50401,
+        };
+        let cache = PageStateCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = PageStateCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn page_pointer_cache() {
-        assert_eq!(
-            run_test(PagePointerCache::<NUM_PAGES>::new()).await,
-            FlashStatsResult {
-                erases: 198,
-                reads: 163273,
-                writes: 5201,
-                bytes_read: 1641365,
-                bytes_written: 50401
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 198,
+            reads: 163273,
+            writes: 5201,
+            bytes_read: 1641365,
+            bytes_written: 50401,
+        };
+        let cache = PagePointerCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = PagePointerCache::<NUM_PAGES>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn key_pointer_cache_half() {
-        assert_eq!(
-            run_test(KeyPointerCache::<NUM_PAGES, u16, 12>::new()).await,
-            FlashStatsResult {
-                erases: 198,
-                reads: 131503,
-                writes: 5201,
-                bytes_read: 1299275,
-                bytes_written: 50401
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 198,
+            reads: 131503,
+            writes: 5201,
+            bytes_read: 1299275,
+            bytes_written: 50401,
+        };
+        let cache = KeyPointerCache::<NUM_PAGES, u16, 12>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = KeyPointerCache::<NUM_PAGES, u16, 12>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     #[test]
     async fn key_pointer_cache_full() {
-        assert_eq!(
-            run_test(KeyPointerCache::<NUM_PAGES, u16, 24>::new()).await,
-            FlashStatsResult {
-                erases: 198,
-                reads: 14510,
-                writes: 5201,
-                bytes_read: 150592,
-                bytes_written: 50401
-            }
-        );
+        let expected_res = FlashStatsResult {
+            erases: 198,
+            reads: 14510,
+            writes: 5201,
+            bytes_read: 150592,
+            bytes_written: 50401,
+        };
+        let cache = KeyPointerCache::<NUM_PAGES, u16, 24>::new();
+        assert_eq!(run_test(cache).await, expected_res);
+        let mut cache = KeyPointerCache::<NUM_PAGES, u16, 24>::new();
+        assert_eq!(run_test(&mut cache).await, expected_res);
     }
 
     async fn run_test(cache: impl KeyCacheImpl<u16>) -> FlashStatsResult {

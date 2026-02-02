@@ -31,12 +31,22 @@ pub(crate) use page_states::PageStatesCache;
 #[allow(private_bounds)]
 pub trait CacheImpl: PrivateCacheImpl {}
 
+impl<T: PrivateCacheImpl> CacheImpl for &mut T {}
+
 /// Trait implemented by all cache types that know about keys
 #[allow(private_bounds)]
 pub trait KeyCacheImpl<KEY: Key>: CacheImpl + PrivateKeyCacheImpl<KEY> {}
 
+impl<KEY: Key, T: CacheImpl + PrivateKeyCacheImpl<KEY>> KeyCacheImpl<KEY> for &mut T {}
+
 pub(crate) trait Invalidate {
     fn invalidate_cache_state(&mut self);
+}
+
+impl<T: Invalidate> Invalidate for &mut T {
+    fn invalidate_cache_state(&mut self) {
+        (*self).invalidate_cache_state()
+    }
 }
 
 pub(crate) trait PrivateCacheImpl: Invalidate {
@@ -121,6 +131,29 @@ pub(crate) trait PrivateCacheImpl: Invalidate {
     }
 }
 
+impl<T: PrivateCacheImpl> PrivateCacheImpl for &mut T {
+    type PSC<'a>
+        = T::PSC<'a>
+    where
+        Self: 'a;
+    type PPC<'a>
+        = T::PPC<'a>
+    where
+        Self: 'a;
+
+    fn dirt_tracker<R>(&mut self, f: impl FnOnce(&mut DirtTracker) -> R) -> Option<R> {
+        (*self).dirt_tracker(f)
+    }
+
+    fn page_states(&mut self) -> Self::PSC<'_> {
+        (*self).page_states()
+    }
+
+    fn page_pointers(&mut self) -> Self::PPC<'_> {
+        (*self).page_pointers()
+    }
+}
+
 pub(crate) trait PrivateKeyCacheImpl<KEY: Key>: PrivateCacheImpl {
     type KPC<'a>: KeyPointersCache<KEY>
     where
@@ -142,6 +175,29 @@ pub(crate) trait PrivateKeyCacheImpl<KEY: Key>: PrivateCacheImpl {
     fn notice_key_erased(&mut self, key: &KEY) {
         self.mark_dirty();
         self.key_pointers().notice_key_erased(key);
+    }
+}
+
+impl<KEY: Key, T: PrivateKeyCacheImpl<KEY>> PrivateKeyCacheImpl<KEY> for &mut T {
+    type KPC<'a>
+        = T::KPC<'a>
+    where
+        Self: 'a;
+
+    fn key_pointers(&mut self) -> Self::KPC<'_> {
+        (*self).key_pointers()
+    }
+
+    fn key_location(&mut self, key: &KEY) -> Option<u32> {
+        (*self).key_location(key)
+    }
+
+    fn notice_key_location(&mut self, key: &KEY, item_address: u32, dirty: bool) {
+        (*self).notice_key_location(key, item_address, dirty);
+    }
+
+    fn notice_key_erased(&mut self, key: &KEY) {
+        (*self).notice_key_erased(key);
     }
 }
 
